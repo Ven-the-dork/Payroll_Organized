@@ -27,11 +27,14 @@ function mapRowToEmployee(row) {
   };
 }
 
+// LIST
 export async function fetchEmployees({ searchTerm, sortField, sortDirection }) {
   let query = supabase
     .from("employees")
     .select("*")
     .neq("role", "admin")
+    .eq("status", "Active")        // only active
+    .eq("is_disabled", false)      // and not disabled
     .order(sortField, { ascending: sortDirection === "asc" });
 
   if (searchTerm.trim()) {
@@ -47,22 +50,33 @@ export async function fetchEmployees({ searchTerm, sortField, sortDirection }) {
   return (data || []).map(mapRowToEmployee);
 }
 
+
+// INSERT
 export async function insertEmployee(employeePayload) {
   const { error } = await supabase.from("employees").insert(employeePayload);
   if (error) throw error;
 }
 
-export async function deleteEmployeeById(id) {
-  const { error } = await supabase.from("employees").delete().eq("id", id);
-  if (error) throw error;
+// SOFT DELETE (mark inactive)
+export async function softDeleteEmployeeById(id) {
+  const { error } = await supabase
+    .from("employees")
+    .update({ is_disabled: true })  // optionally also status: "Inactive"
+    .eq("id", id);
+
+  if (error) {
+    console.error("Soft delete employee error:", error);
+    throw error;
+  }
 }
 
-// Full profile for auth flows (employee + admin)
+
+// FULL PROFILE BY UID
 export async function fetchEmployeeByFirebaseUid(firebaseUid) {
   const { data, error } = await supabase
     .from("employees")
     .select(
-      "id, firebase_uid, role, email, full_name, department, position, can_view_payroll"
+      "id, firebase_uid, role, email, full_name, department, position, can_view_payroll, is_disabled"
     )
     .eq("firebase_uid", firebaseUid)
     .maybeSingle();
@@ -71,7 +85,8 @@ export async function fetchEmployeeByFirebaseUid(firebaseUid) {
   return data || null;
 }
 
-// Resolve just the employee id from Firebase uid (DashboardUser fallback)
+
+// JUST ID BY UID
 export async function fetchEmployeeIdByFirebaseUid(uid) {
   const { data, error } = await supabase
     .from("employees")
@@ -83,7 +98,7 @@ export async function fetchEmployeeIdByFirebaseUid(uid) {
   return data?.id ?? null;
 }
 
-// Heartbeat helpers (DashboardUser)
+// HEARTBEAT ONLINE
 export async function markEmployeeOnline(employeeId) {
   const { error } = await supabase
     .from("employees")
@@ -96,6 +111,7 @@ export async function markEmployeeOnline(employeeId) {
   if (error) throw error;
 }
 
+// HEARTBEAT OFFLINE
 export async function markEmployeeOffline(employeeId) {
   const { error } = await supabase
     .from("employees")

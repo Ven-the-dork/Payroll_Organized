@@ -69,13 +69,14 @@ export default function TimeTracking() {
     const fetchAttendance = async () => {
       setLoading(true);
       try {
-        const { data: employees, error: empError } = await supabase
-          .from("employees")
-          .select("id, full_name, department, role")
-          .eq("status", "Active")
-          .neq("role", "admin");
-        if (empError) throw empError;
+          const { data: employees, error: empError } = await supabase
+            .from("employees")
+            .select("id, full_name, department, role, is_disabled") // add is_disabled
+            .eq("status", "Active")
+            .eq("is_disabled", false)   // exclude disabled employees
+            .neq("role", "admin");
 
+          if (empError) throw empError;
         const { data: logs, error: logError } = await supabase
           .from("attendance_logs")
           .select("employee_id, clock_in_at, shift_date, notes")

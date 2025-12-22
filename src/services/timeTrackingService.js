@@ -4,13 +4,16 @@ import { supabase } from "../supabaseClient";
 export async function fetchActiveEmployees() {
   const { data, error } = await supabase
     .from("employees")
-    .select("id, full_name, department, role, status")
+    .select("id, full_name, department, role, status, is_disabled") // add is_disabled
     .eq("status", "Active")
+    .eq("is_disabled", false)
     .neq("role", "admin");
 
   if (error) throw error;
   return data || [];
 }
+
+
 
 export async function fetchAttendanceLogsByDate(date) {
   const { data, error } = await supabase

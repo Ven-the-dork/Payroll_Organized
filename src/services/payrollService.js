@@ -5,13 +5,12 @@ import { supabase } from "../supabaseClient";
 export async function fetchActiveEmployeesForPayroll() {
   const { data, error } = await supabase
     .from("employees")
-    .select("id, full_name, department, position, status, role, daily_rate")
-    .eq("role", "user")
+    .select("id, full_name, department, position, daily_rate")
     .eq("status", "Active")
-    .order("full_name", { ascending: true });
-
+    .eq("is_disabled", false)   // hide soft-deleted
+    .neq("role", "admin");
   if (error) throw error;
-  return (data || []).map((e) => ({ ...e, daily_rate: e.daily_rate ?? 0 }));
+  return data || [];
 }
 
 // Admin: attendance summary per employee for a period

@@ -15,11 +15,7 @@ import AdminSidebar from "../components/Employeesidebar";
 import FontSizeMenu from "../../../components/hooks/FontSizeMenu";
 import AdminSetting from "../../../components/Adminsetting";
 
-import {
-  fetchEmployees,
-  insertEmployee,
-  deleteEmployeeById,
-} from "../../../services/employeeService";
+import { fetchEmployees, insertEmployee, softDeleteEmployeeById } from "../../../services/employeeService";
 
 import EmployeeStatsCards from "../components/EmployeeStatsCards";
 import EmployeeTable from "../components/EmployeeTable";
@@ -210,53 +206,70 @@ export default function EmployeeManagement() {
     setPasswordError("");
   };
 
-  const handleConfirmDelete = async (e) => {
-    e.preventDefault();
-    if (!passwordInput) {
-      setPasswordError("Please enter your password");
-      return;
-    }
-    if (!currentUser?.email) {
-      setPasswordError("User session not found. Please log in again.");
-      return;
-    }
-
-    setVerifyingPassword(true);
-    setPasswordError("");
-
-    try {
-      await signInWithEmailAndPassword(auth, currentUser.email, passwordInput);
-
-      await deleteEmployeeById(employeeToDelete.id);
-
-      setEmployeeData((prev) =>
-        prev.filter((e) => e.id !== employeeToDelete.id)
-      );
-
-      await logAudit({
-        action: "deleted_employee",
-        details: `Deleted employee: ${employeeToDelete.name}`,
-        currentUser: currentUser,
-      });
-
-      setShowPasswordModal(false);
-      setEmployeeToDelete(null);
-      setPasswordInput("");
-      alert(`Employee ${employeeToDelete.name} deleted successfully!`);
-    } catch (error) {
-      if (
-        error.code === "auth/wrong-password" ||
-        error.code === "auth/invalid-credential"
-      ) {
-        setPasswordError("Incorrect password. Please try again.");
-      } else {
-        console.error(error);
-        setPasswordError("Authentication failed. Please try again.");
+    const handleConfirmDelete = async (e) => {
+      e.preventDefault();
+      if (!passwordInput) {
+        setPasswordError("Please enter your password");
+        return;
       }
-    } finally {
-      setVerifyingPassword(false);
-    }
-  };
+      if (!currentUser?.email) {
+        setPasswordError("User session not found. Please log in again.");
+        return;
+      }
+
+      setVerifyingPassword(true);
+      setPasswordError("");
+
+      try {
+        // re-authenticate admin
+        await signInWithEmailAndPassword(
+          auth,
+          currentUser.email,
+          passwordInput
+        );
+
+        // soft delete in DB: mark employee Inactive
+        await softDeleteEmployeeById(employeeToDelete.id);
+
+        // update UI: flip status instead of removing row
+        setEmployeeData((prev) =>
+          prev.map((e) =>
+            e.id === employeeToDelete.id ? { ...e, status: "Inactive" } : e
+          )
+        );
+
+        // audit log
+        await logAudit({
+          action: "deleted_employee",
+          details: `Soft-deleted employee: ${employeeToDelete.name}`,
+          currentUser,
+        });
+
+        // close modal + reset
+        setShowPasswordModal(false);
+        setEmployeeToDelete(null);
+        setPasswordInput("");
+        alert(
+          `Employee ${employeeToDelete.name} has been marked inactive successfully!`
+        );
+      } catch (error) {
+        if (
+          error.code === "auth/wrong-password" ||
+          error.code === "auth/invalid-credential"
+        ) {
+          setPasswordError("Incorrect password. Please try again.");
+        } else {
+          console.error(error);
+          setPasswordError(
+            "Failed to update employee status. Please try again."
+          );
+        }
+      } finally {
+        setVerifyingPassword(false);
+      }
+    };
+
+
 
   const handleClosePasswordModal = () => {
     setShowPasswordModal(false);

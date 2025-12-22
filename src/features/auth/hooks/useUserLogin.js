@@ -2,11 +2,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../../firebaseConfig";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { fetchEmployeeByFirebaseUid } from "../../../services/employeeService";
 
 export function useUserLogin() {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,6 +47,7 @@ export function useUserLogin() {
     setError("");
 
     try {
+      // 1) Firebase auth
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email.trim(),
@@ -53,6 +55,7 @@ export function useUserLogin() {
       );
       const user = userCredential.user;
 
+      // 2) Fetch employee profile from Supabase
       let userProfile;
       try {
         userProfile = await fetchEmployeeByFirebaseUid(user.uid);
@@ -61,17 +64,28 @@ export function useUserLogin() {
       }
 
       if (!userProfile) {
+        await signOut(auth);
         throw new Error(
           "User profile not found in database. Please contact administrator."
         );
       }
 
+      // 3) Block admins on this form (user login only)
       if (userProfile.role === "admin") {
         setError("Invalid user account");
-        await auth.signOut();
+        await signOut(auth);
         return;
       }
 
+      // 4) Block soft-deleted / disabled employees
+      if (userProfile.is_disabled) {
+        await signOut(auth);
+        throw new Error(
+          "Your account is inactive. Please contact the administrator."
+        );
+      }
+
+      // 5) Store session and navigate
       sessionStorage.setItem(
         "user",
         JSON.stringify({
@@ -95,7 +109,9 @@ export function useUserLogin() {
       } else if (err.code === "auth/invalid-email") {
         setError("Invalid email address format.");
       } else if (err.code === "auth/too-many-requests") {
-        setError("Too many failed login attempts. Please try again later.");
+        setError(
+          "Too many failed login attempts. Please try again later."
+        );
       } else if (err.code === "auth/invalid-credential") {
         setError("Invalid email or password.");
       } else {
