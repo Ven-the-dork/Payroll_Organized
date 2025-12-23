@@ -44,10 +44,11 @@ export default function LoginPage() {
 
         <div className="text-center mt-6">
           <p className="text-xs text-green-100 opacity-50">
-            © 2025 Employee Management System
+            © 2025 CVSU. All rights reserved.
           </p>
         </div>
       </div>
     </div>
   );
 }
+
