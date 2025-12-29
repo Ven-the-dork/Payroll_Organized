@@ -1,5 +1,5 @@
 // src/features/auth/components/AdminLoginForm.jsx
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock } from "lucide-react";
 
 export default function AdminLoginForm({
   email,
@@ -7,7 +7,6 @@ export default function AdminLoginForm({
   password,
   setPassword,
   showPassword,
-  setShowPassword,
   error,
   loading,
   onSubmit,
@@ -52,20 +51,10 @@ export default function AdminLoginForm({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 transition-all bg-gray-50 pr-12"
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 transition-all bg-gray-50 pr-1"
               required
               disabled={loading}
-              data-eye="false"
-              style={{ WebkitTextSecurity: showPassword ? 'none' : 'disc' }}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-green-700 transition-colors"
-              disabled={loading}
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
           </div>
         </div>
 
