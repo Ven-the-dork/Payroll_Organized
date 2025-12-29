@@ -55,6 +55,8 @@ export default function AdminLoginForm({
               className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-200 transition-all bg-gray-50 pr-12"
               required
               disabled={loading}
+              data-eye="false"
+              style={{ WebkitTextSecurity: showPassword ? 'none' : 'disc' }}
             />
             <button
               type="button"
