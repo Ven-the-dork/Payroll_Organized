@@ -7,10 +7,12 @@ export async function fetchDashboardStats() {
     pendingLeavesCount: 0,
   };
 
+  // Count only enabled employees (is_disabled = false, excluding admins)
   const { count: empCount, error: empError } = await supabase
     .from("employees")
     .select("*", { count: "exact", head: true })
-    .neq("role", "admin");
+    .neq("role", "admin")
+    .eq("is_disabled", false); // Only count enabled employees
 
   if (!empError) {
     result.employeeCount = empCount || 0;
@@ -27,4 +29,3 @@ export async function fetchDashboardStats() {
 
   return result;
 }
-

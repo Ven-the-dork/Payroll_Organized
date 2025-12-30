@@ -14,7 +14,7 @@ import UserProfile from "../features/profile/pages/UserProfile";
 import ProtectedRoute from "../ProtectedRoute";
 import PayrollManagement from "../features/payroll_management/pages/PayrollManagement";
 import TimeTracking from "../features/time_tracking/pages/TimeTracking";
-
+import ForgotPassword from '../features/auth/pages/ForgotPassword';
 function App() {
   return (
     <div className="app-root">
@@ -24,7 +24,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         {/* Admin-only Routes */}
         <Route
           path="/dashboard"

@@ -50,15 +50,7 @@ export default function FAQModal({ open, onClose }) {
   const items = [
     {
       q: "How do I clock in?",
-      a: "Go to Attendance and press Clock In once. If it says already clocked in, clock out first.",
-    },
-    {
-      q: "How do I clock out?",
-      a: "Go to Attendance and press Clock Out when you're done for the day.",
-    },
-    {
-      q: "Why can't I clock in/out again?",
-      a: "The system allows one shift per day to prevent duplicate records.",
+      a: "Navigate to the Attendance page and click 'Clock In'. Note: Clock-in is only allowed before 12:00 PM. Any clock-in at or after 9:00 AM will be marked as 'Late'.",
     },
     {
       q: "How do I apply for leave?",
@@ -82,7 +74,7 @@ export default function FAQModal({ open, onClose }) {
     },
     {
       q: "Where can I view my payroll history?",
-      a: "Go to the Payroll History tab at the top of your dashboard to see past payments, deductions, and download payslips.",
+      a: "Go to the Payroll History tab at the top of your dashboard to see past payments and download payslips.",
     },
     {
       q: "What should I do if my attendance is incorrect?",
@@ -90,7 +82,7 @@ export default function FAQModal({ open, onClose }) {
     },
     {
       q: "How do I change my password?",
-      a: "Currently, password changes are handled through Firebase authentication. Contact your system administrator for password reset assistance.",
+      a: "Navigate to the Login page and click 'Forgot Password'. Enter your registered email address to receive a password reset link. Please check both your inbox and spam folder for the email.",
     },
     {
       q: "Who can I contact for technical support?",

@@ -1,4 +1,6 @@
 // src/features/auth/components/LoginForm.jsx
+import { Link } from 'react-router-dom'; // ADD THIS IMPORT!
+
 export default function LoginForm({
   email,
   setEmail,
@@ -42,12 +44,21 @@ export default function LoginForm({
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 transition"
           />
         </div>
-
+        
         {error && (
           <div className="bg-red-50 border-2 border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm font-semibold">
             ⚠️ {error}
           </div>
         )}
+
+        <div className="text-right">
+          <Link 
+            to="/forgot-password"
+            className="text-sm text-green-700 hover:text-green-900 hover:underline font-semibold"
+          >
+            Forgot Password?
+          </Link>
+        </div>
 
         <button
           type="submit"
