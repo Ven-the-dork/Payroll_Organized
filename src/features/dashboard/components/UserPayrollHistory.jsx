@@ -1,8 +1,6 @@
 // src/features/dashboard/components/UserPayrollHistory.jsx
 import { useState, useEffect, useMemo } from "react";
-import { Calendar, Receipt, Eye, Download, X } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { Calendar, Receipt, Eye, X } from "lucide-react";
 import { fetchPayrollHistoryByEmployee } from "../../../services/payrollService";
 
 export default function UserPayrollHistory({ employeeId }) {
@@ -65,47 +63,6 @@ export default function UserPayrollHistory({ employeeId }) {
     return { total, avg, highest, lowest };
   }, [rows]);
 
-  const handleDownload = (record) => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("PAYSLIP", 105, 20, { align: "center" });
-
-    doc.setFontSize(10);
-    doc.text(
-      `Period: ${formatPeriod(record.period_start, record.period_end)}`,
-      14,
-      30
-    );
-    doc.text(`Date Paid: ${formatDate(record.paid_at)}`, 14, 35);
-    doc.text(`Status: ${record.status}`, 14, 40);
-
-    autoTable(doc, {
-      startY: 50,
-      head: [["Description", "Amount"]],
-      body: [
-        ["Gross Pay", peso(Number(record.gross_pay))],
-        ["Deductions", `(${peso(Number(record.deductions))})`],
-        [
-          { content: "NET PAY", styles: { fontStyle: "bold" } },
-          {
-            content: peso(Number(record.net_pay)),
-            styles: { fontStyle: "bold" },
-          },
-        ],
-      ],
-      theme: "grid",
-      headStyles: { fillColor: [21, 128, 61] },
-    });
-
-    doc.text(
-      "This is a system-generated payslip.",
-      105,
-      doc.lastAutoTable.finalY + 20,
-      { align: "center" }
-    );
-    doc.save(`Payslip_${record.period_end}.pdf`);
-  };
-
   return (
     <section className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
@@ -117,7 +74,7 @@ export default function UserPayrollHistory({ employeeId }) {
           </span>
         </h2>
         <p className="text-sm text-gray-500 mt-1">
-          View your payment records and download payslips
+          View your payment records and payslip details
         </p>
       </div>
 
@@ -128,7 +85,7 @@ export default function UserPayrollHistory({ employeeId }) {
           <div className="relative z-10">
             <div className="flex justify-between items-start mb-3">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                <span className="text-2xl">$</span>
+                <span className="text-2xl">₱</span>
               </div>
               <div className="p-1.5 bg-white/20 rounded-md">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -348,16 +305,6 @@ export default function UserPayrollHistory({ employeeId }) {
                             title="View Details"
                           >
                             <Eye
-                              size={18}
-                              className="group-hover/btn:scale-110 transition-transform"
-                            />
-                          </button>
-                          <button
-                            onClick={() => handleDownload(r)}
-                            className="p-2 text-gray-400 hover:bg-green-50 hover:text-green-700 rounded-lg transition-colors group/btn"
-                            title="Download PDF"
-                          >
-                            <Download
                               size={18}
                               className="group-hover/btn:scale-110 transition-transform"
                             />
