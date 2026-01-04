@@ -309,40 +309,51 @@ export default function EmployeeManagement() {
         }`}
       >
         {/* Header */}
-        <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsOpen((s) => !s)}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
-            >
-              <Menu size={24} />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold text-gray-800 tracking-tight">
-                Employee Directory
-              </h1>
-              <p className="text-xs text-gray-500 hidden sm:block">
-                Manage your team members and roles
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden md:block text-xs text-gray-400 font-medium">
-              Last updated: {currentTime}
-            </span>
-            <div className="h-6 w-px bg-gray-200 mx-2 hidden md:block" />
-            <AdminBell />
-            <AdminSetting
-              trigger={
-                <button className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200 transition-all">
-                  <Settings size={20} />
+          <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 sticky top-0 z-40">
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              {/* Left side - Menu button + Title */}
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
+                <button
+                  onClick={() => setIsOpen((s) => !s)}
+                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors flex-shrink-0"
+                  aria-label="Toggle Sidebar"
+                >
+                  <Menu size={20} className="sm:w-6 sm:h-6" />
                 </button>
-              }
-            >
-              {({ close }) => <FontSizeMenu closeMenu={close} />}
-            </AdminSetting>
-          </div>
-        </header>
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-800 tracking-tight truncate leading-tight">
+                    Employee Directory
+                  </h1>
+                  <p className="text-xs text-gray-500 hidden md:block truncate leading-tight">
+                    Manage your team members and roles
+                  </p>
+                </div>
+              </div>
+
+              {/* Right side - Actions */}
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                <span className="hidden xl:inline-block text-xs text-gray-400 font-medium whitespace-nowrap mr-2">
+                  Last updated: {currentTime}
+                </span>
+                <div className="h-5 w-px bg-gray-200 hidden xl:block mr-1" />
+                <AdminBell />
+                <AdminSetting
+                  trigger={
+                    <button 
+                      className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200 transition-all flex-shrink-0"
+                      aria-label="Settings"
+                    >
+                      <Settings size={18} className="sm:w-5 sm:h-5" />
+                    </button>
+                  }
+                >
+                  {({ close }) => <FontSizeMenu closeMenu={close} />}
+                </AdminSetting>
+              </div>
+            </div>
+          </header>
+
+
 
         <div className="p-6 md:p-8 max-w-7xl mx-auto w-full space-y-6">
           {/* Stats */}

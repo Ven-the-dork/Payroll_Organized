@@ -17,7 +17,7 @@ export default function Dropdown({ trigger, children, align = "right" }) {
       <div onClick={() => setOpen((v) => !v)}>{trigger}</div>
 
       {open && (
-        <div className={`absolute ${align === "right" ? "right-0" : "left-0"} mt-2 z-50`}>
+        <div className={`absolute ${align === "right" ? "right-0" : "left-0"} mt-2 z-10`}>
           {typeof children === "function"
             ? children({ close: () => setOpen(false) })
             : children}

@@ -205,7 +205,7 @@ export default function TimeTracking() {
           isOpen ? "lg:ml-0" : ""
         }`}
       >
-        <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-10 flex items-center justify-between">
+        <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-40 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsOpen((prev) => !prev)}
