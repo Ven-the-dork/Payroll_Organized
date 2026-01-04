@@ -194,12 +194,12 @@ export default function LeaveSettingsPanel({
                         >
                           Edit
                         </button>
-                        <button
-                          onClick={() => onDeletePlan(plan.id)}
-                          className="block w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-xs"
-                        >
-                          Delete
-                        </button>
+                      <button
+                        onClick={() => onDeletePlan(plan)}  // Changed from onDeletePlan(plan.id)
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        Delete
+                      </button>
                       </div>
                     )}
                   </td>

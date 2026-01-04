@@ -72,7 +72,13 @@ export default function TimeTrackingFilters({
           />
         </div>
       </div>
+
+      <div className="mt-4 flex justify-end">
+        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition shadow-sm">
+          <Download size={16} />
+          Export Report
+        </button>
+      </div>
     </div>
   );
 }
-

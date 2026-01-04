@@ -8,6 +8,7 @@ import { supabase } from "../../../supabaseClient";
 
 import UserTopBar from "../../../components/UserTopBar";
 import { useUserNotifications } from "../../../components/hooks/useUserNotifications";
+import SuccessToast from "../components/SuccessToast";
 
 import {
   fetchEmployeeIdByFirebaseUid,
@@ -74,6 +75,10 @@ export default function UserApplyForLeave() {
     employeeId,
     notifOpen
   );
+
+  // Success Toast state
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -334,7 +339,11 @@ export default function UserApplyForLeave() {
 
     try {
       await insertLeaveApplication(payload);
-      alert("Leave application submitted successfully!");
+      
+      // Show success toast instead of alert
+      setSuccessMessage("Leave application submitted successfully!");
+      setShowSuccessToast(true);
+      
       closeModal();
 
       const history = await fetchUserLeaveHistory(currentUser.uid);
@@ -442,6 +451,13 @@ export default function UserApplyForLeave() {
           submitting={submitting}
         />
       )}
+
+      {/* Success Toast */}
+      <SuccessToast
+        isOpen={showSuccessToast}
+        message={successMessage}
+        onClose={() => setShowSuccessToast(false)}
+      />
     </div>
   );
 }

@@ -9,6 +9,10 @@ import AdminBell from "../../../components/AdminBell";
 import AdminSidebar from "../components/Leavedashvar";
 import FontSizeMenu from "../../../components/hooks/FontSizeMenu";
 import AdminSetting from "../../../components/Adminsetting";
+import DeletePlanModal from "../components/DeletePlanModal";
+import SuccessToast from "../components/SuccessToast";
+import ApproveLeaveModal from "../components/ApproveLeaveModal";
+import RejectLeaveModal from "../components/RejectLeaveModal";
 
 import {
   fetchLeavePlans,
@@ -60,6 +64,22 @@ export default function LeaveManagement() {
   const [recallNewResumptionDate, setRecallNewResumptionDate] = useState("");
   const [recallReasonText, setRecallReasonText] = useState("");
   const [submittingRecall, setSubmittingRecall] = useState(false);
+
+  // Delete Pop up modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState(null);
+  const [isDeletingPlan, setIsDeletingPlan] = useState(false);
+
+  // Success popup modal
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Approve/Reject modals
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [isApprovingLeave, setIsApprovingLeave] = useState(false);
+  const [isRejectingLeave, setIsRejectingLeave] = useState(false);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -165,20 +185,40 @@ export default function LeaveManagement() {
     try {
       const data = await createLeavePlan(payload);
       setLeavePlans((prev) => [...prev, data]);
+      
+      // Show success toast instead of alert
+      setSuccessMessage(`Leave plan "${leavePlanName}" created successfully!`);
+      setShowSuccessToast(true);
+      
+      // Clear form after showing success message
       setLeavePlanName("");
       setDurationDays("");
       setAllowRecall("");
-      alert("Leave plan created!");
     } catch (error) {
       console.error(error);
       alert("Failed to create leave plan");
     }
   }
 
-  async function handleApproveLeave(applicationId) {
-    if (!window.confirm("Approve this leave application?")) return;
+  // NEW: Open approve modal
+  function handleApproveLeaveClick(application) {
+    setSelectedApplication(application);
+    setShowApproveModal(true);
+  }
 
+  // NEW: Confirm approve
+  async function confirmApproveLeave() {
+    if (!selectedApplication) return;
+
+    setIsApprovingLeave(true);
     try {
+      // Use the application ID directly
+      const applicationId = selectedApplication.id;
+      
+      if (!applicationId) {
+        throw new Error("Application ID is missing");
+      }
+
       const appRow = await getLeaveApplicationForNotification(applicationId);
 
       await updateLeaveStatus(applicationId, {
@@ -200,40 +240,74 @@ export default function LeaveManagement() {
           app.id === applicationId ? { ...app, status: "approved" } : app
         )
       );
+
+      setShowApproveModal(false);
+      setSelectedApplication(null);
+      
+      setSuccessMessage("Leave application approved successfully!");
+      setShowSuccessToast(true);
     } catch (error) {
-      console.error(error);
+      console.error("Error approving leave:", error);
+      alert(`Failed to approve leave application: ${error.message}`);
+    } finally {
+      setIsApprovingLeave(false);
     }
   }
 
-  async function handleRejectLeave(applicationId) {
-    if (!window.confirm("Reject this leave application?")) return;
 
-    try {
-      const appRow = await getLeaveApplicationForNotification(applicationId);
-
-      await updateLeaveStatus(applicationId, {
-        status: "rejected",
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: currentUser?.uid,
-      });
-
-      await createLeaveNotification({
-        employeeId: appRow.employee_id,
-        leaveApplicationId: appRow.id,
-        type: "leave_declined",
-        title: "Leave declined",
-        message: `Your ${appRow.leave_plans?.name || "leave"} request was declined.`,
-      });
-
-      setLeaveApplications((prev) =>
-        prev.map((app) =>
-          app.id === applicationId ? { ...app, status: "rejected" } : app
-        )
-      );
-    } catch (error) {
-      console.error(error);
-    }
+  // NEW: Open reject modal
+  function handleRejectLeaveClick(application) {
+    setSelectedApplication(application);
+    setShowRejectModal(true);
   }
+
+  // NEW: Confirm reject
+      async function confirmRejectLeave() {
+      if (!selectedApplication) return;
+
+      setIsRejectingLeave(true);
+      try {
+        const applicationId = selectedApplication.id;
+        
+        if (!applicationId) {
+          throw new Error("Application ID is missing");
+        }
+
+        const appRow = await getLeaveApplicationForNotification(applicationId);
+
+        await updateLeaveStatus(applicationId, {
+          status: "rejected",
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: currentUser?.uid,
+        });
+
+        await createLeaveNotification({
+          employeeId: appRow.employee_id,
+          leaveApplicationId: appRow.id,
+          type: "leave_declined",
+          title: "Leave declined",
+          message: `Your ${appRow.leave_plans?.name || "leave"} request was declined.`,
+        });
+
+        setLeaveApplications((prev) =>
+          prev.map((app) =>
+            app.id === applicationId ? { ...app, status: "rejected" } : app
+          )
+        );
+
+        setShowRejectModal(false);
+        setSelectedApplication(null);
+        
+        setSuccessMessage("Leave application rejected successfully!");
+        setShowSuccessToast(true);
+      } catch (error) {
+        console.error("Error rejecting leave:", error);
+        alert(`Failed to reject leave application: ${error.message}`);
+      } finally {
+        setIsRejectingLeave(false);
+      }
+    }
+
 
   function handleStartEdit(plan) {
     setEditingPlan(plan);
@@ -270,14 +344,39 @@ export default function LeaveManagement() {
     }
   }
 
-  async function handleDeleteLeavePlan(planId) {
-    if (!window.confirm("Delete this plan?")) return;
+  // Open delete modal
+  function handleDeleteLeavePlan(plan) {
+    setPlanToDelete(plan);
+    setShowDeleteModal(true);
+    setOpenDropdown(null);
+  }
+
+  // Confirm delete
+  async function confirmDeletePlan() {
+    if (!planToDelete) return;
+
+    setIsDeletingPlan(true);
     try {
-      await softDeleteLeavePlan(planId);
-      setLeavePlans((prev) => prev.filter((p) => p.id !== planId));
+      await softDeleteLeavePlan(planToDelete.id);
+      setLeavePlans((prev) => prev.filter((p) => p.id !== planToDelete.id));
+      setShowDeleteModal(false);
+      setPlanToDelete(null);
+      
+      // Show success toast for deletion too
+      setSuccessMessage(`Leave plan "${planToDelete.name}" deleted successfully!`);
+      setShowSuccessToast(true);
     } catch (error) {
       console.error(error);
+      alert("Failed to delete leave plan");
+    } finally {
+      setIsDeletingPlan(false);
     }
+  }
+
+  // Cancel delete
+  function cancelDeletePlan() {
+    setShowDeleteModal(false);
+    setPlanToDelete(null);
   }
 
   function handleOpenRecallModal(leave) {
@@ -405,8 +504,8 @@ export default function LeaveManagement() {
             <LeaveHistoryPanel
               applications={leaveApplications}
               loading={loadingApplications}
-              onApprove={handleApproveLeave}
-              onReject={handleRejectLeave}
+              onApprove={handleApproveLeaveClick}
+              onReject={handleRejectLeaveClick}
             />
           )}
 
@@ -458,6 +557,42 @@ export default function LeaveManagement() {
           onChangeReason={setRecallReasonText}
           onSubmit={handleSubmitRecall}
           onClose={() => setShowRecallModal(false)}
+        />
+
+        {/* Delete Confirmation Modal */}
+        <DeletePlanModal
+          isOpen={showDeleteModal}
+          planName={planToDelete?.name || ""}
+          onConfirm={confirmDeletePlan}
+          onCancel={cancelDeletePlan}
+          isDeleting={isDeletingPlan}
+        />
+
+        {/* Approve Modal */}
+        <ApproveLeaveModal
+          isOpen={showApproveModal}
+          employeeName={selectedApplication?.employees?.name || "Employee"}
+          leaveType={selectedApplication?.leave_plans?.name || "Leave"}
+          onConfirm={confirmApproveLeave}
+          onCancel={() => setShowApproveModal(false)}
+          isApproving={isApprovingLeave}
+        />
+
+        {/* Reject Modal */}
+        <RejectLeaveModal
+          isOpen={showRejectModal}
+          employeeName={selectedApplication?.employees?.name || "Employee"}
+          leaveType={selectedApplication?.leave_plans?.name || "Leave"}
+          onConfirm={confirmRejectLeave}
+          onCancel={() => setShowRejectModal(false)}
+          isRejecting={isRejectingLeave}
+        />
+
+        {/* Success Toast */}
+        <SuccessToast
+          isOpen={showSuccessToast}
+          message={successMessage}
+          onClose={() => setShowSuccessToast(false)}
         />
       </main>
     </div>
