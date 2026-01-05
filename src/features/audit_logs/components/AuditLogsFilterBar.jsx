@@ -42,14 +42,8 @@ export default function AuditLogsFilterBar({
             className="w-full py-2.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none cursor-pointer"
           >
             <option value="all">All Actions</option>
-            <option value="admin_login">Login</option>
-            <option value="admin_logout">Logout</option>
             <option value="created_employee">Created Employee</option>
             <option value="deleted_employee">Deleted Employee</option>
-            <option value="updated_employee">Updated Employee</option>
-            <option value="approved_leave">Approved Leave</option>
-            <option value="rejected_leave">Rejected Leave</option>
-            <option value="recalled_leave">Recalled Leave</option>
           </select>
         </div>
 
@@ -72,3 +66,4 @@ export default function AuditLogsFilterBar({
     </div>
   );
 }
+
