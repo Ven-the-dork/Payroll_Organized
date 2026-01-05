@@ -25,10 +25,10 @@ export default function LoginPage() {
             className="w-24 h-24 mx-auto mb-4 cursor-pointer"
           />
           <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2">
-            Employee Portal
+            Payroll Management System
           </h1>
           <p className="text-green-100 text-sm">
-            Please enter your credentials to log in
+            Employee Portal
           </p>
         </div>
 
@@ -51,4 +51,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
