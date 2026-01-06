@@ -1,6 +1,6 @@
 // src/features/leave/pages/UserApplyForLeave.jsx
 import { useState, useEffect } from "react";
-import { ArrowLeft, Calendar, Clock, Paperclip } from "lucide-react";
+import { ArrowLeft, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../../firebaseConfig";
@@ -9,7 +9,7 @@ import { supabase } from "../../../supabaseClient";
 import UserTopBar from "../../../components/UserTopBar";
 import { useUserNotifications } from "../../../components/hooks/useUserNotifications";
 import SuccessToast from "../components/SuccessToast";
-
+import ErrorToast from "../components/ErrorToast";
 import {
   fetchEmployeeIdByFirebaseUid,
   markEmployeeOnline,
@@ -76,9 +76,11 @@ export default function UserApplyForLeave() {
     notifOpen
   );
 
-  // Success Toast state
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -237,35 +239,51 @@ export default function UserApplyForLeave() {
     e.preventDefault();
 
     if (!startDate || !endDate || !reason) {
-      alert("Please fill in all fields");
+      setErrorMessage("Please fill in all fields.");
+      setShowErrorToast(true);
       return;
     }
 
-    if (new Date(endDate) < new Date(startDate)) {
-      alert("End date must be after start date");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (start < today || end < today) {
+      setErrorMessage("You cannot apply for leave in the past.");
+      setShowErrorToast(true);
+      return;
+    }
+
+    if (end < start) {
+      setErrorMessage("End date must be after start date.");
+      setShowErrorToast(true);
       return;
     }
 
     if (!currentUser?.uid) {
-      alert("Firebase UID not found. Please log in again.");
+      setErrorMessage("Session issue. Please log in again.");
+      setShowErrorToast(true);
       return;
     }
 
     if (!employeeId) {
-      alert("Employee ID not found. Please contact administrator.");
+      setErrorMessage("Employee record not found. Please contact administrator.");
+      setShowErrorToast(true);
       return;
     }
 
     setSubmitting(true);
 
     const duration = calculateDuration(startDate, endDate);
-    const currentBalance =
-      leaveBalances[selectedLeave.id] ?? selectedLeave.days;
+    const currentBalance = leaveBalances[selectedLeave.id] ?? selectedLeave.days;
 
     if (duration > currentBalance) {
-      alert(
-        `Insufficient leave balance! You only have ${currentBalance} days left.`
+      setErrorMessage(
+        `Insufficient leave balance. You only have ${currentBalance} days left.`
       );
+      setShowErrorToast(true);
       setSubmitting(false);
       return;
     }
@@ -283,21 +301,23 @@ export default function UserApplyForLeave() {
       if (conflictError) throw conflictError;
 
       if (existingConflicts && existingConflicts.length > 0) {
-        alert(
-          "Conflict Detected! You already have a leave application for these dates."
+        setErrorMessage(
+          "You already have a leave application that overlaps these dates."
         );
+        setShowErrorToast(true);
         setSubmitting(false);
         return;
       }
     } catch (err) {
       console.error("Error checking conflicts:", err);
+      setErrorMessage("Failed to validate leave dates. Please try again.");
+      setShowErrorToast(true);
       setSubmitting(false);
       return;
     }
 
     // File upload (Supabase)
     let attachmentUrl = null;
-
     if (attachment) {
       try {
         const fileExt = attachment.name.split(".").pop();
@@ -316,9 +336,10 @@ export default function UserApplyForLeave() {
         attachmentUrl = urlData.publicUrl;
       } catch (uploadErr) {
         console.error("Upload error:", uploadErr);
-        alert(
+        setErrorMessage(
           "Failed to upload file. Please check your network or file size."
         );
+        setShowErrorToast(true);
         setSubmitting(false);
         return;
       }
@@ -339,18 +360,17 @@ export default function UserApplyForLeave() {
 
     try {
       await insertLeaveApplication(payload);
-      
-      // Show success toast instead of alert
+
       setSuccessMessage("Leave application submitted successfully!");
       setShowSuccessToast(true);
-      
       closeModal();
 
       const history = await fetchUserLeaveHistory(currentUser.uid);
       setLeaveHistory(history);
     } catch (error) {
       console.error("Error submitting:", error);
-      alert("Failed to submit: " + error.message);
+      setErrorMessage("Failed to submit leave. Please try again.");
+      setShowErrorToast(true);
     } finally {
       setSubmitting(false);
     }
@@ -457,6 +477,13 @@ export default function UserApplyForLeave() {
         isOpen={showSuccessToast}
         message={successMessage}
         onClose={() => setShowSuccessToast(false)}
+      />
+
+      {/* Error Toast */}
+      <ErrorToast
+        isOpen={showErrorToast}
+        message={errorMessage}
+        onClose={() => setShowErrorToast(false)}
       />
     </div>
   );

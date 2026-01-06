@@ -27,19 +27,29 @@ export default function AdminSidebar({
       <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-green-800">
         
         {/* Profile Section */}
-        <div className={`flex flex-col items-center pt-10 pb-8 transition-all duration-300 ${hideWhenCollapsed}`}>
-          <div className="w-20 h-20 rounded-full bg-yellow-400 flex items-center justify-center shadow-md mb-3 ring-4 ring-green-600/30">
-            <span className="text-4xl text-green-900">👤</span>
+        <div className="flex flex-col items-center pt-10 pb-8 transition-all duration-300">
+          <div
+            className={`rounded-full bg-yellow-400 flex items-center justify-center shadow-md mb-3 ring-4 ring-green-600/30 transition-all duration-300
+            ${isOpen ? "w-20 h-20" : "w-10 h-10"}`}
+          >
+            <span className={isOpen ? "text-4xl text-green-900" : "text-2xl text-green-900"}>
+              👤
+            </span>
           </div>
 
-          <h2 className="text-lg font-bold text-white tracking-wide text-center px-2">
-            {currentUser?.fullName || "Admin User"}
-          </h2>
+          {isOpen && (
+            <>
+              <h2 className="text-lg font-bold text-white tracking-wide text-center px-2">
+                {currentUser?.fullName || "Admin User"}
+              </h2>
 
-          <p className="text-yellow-300 text-xs font-bold uppercase tracking-wider mt-1">
-            {currentUser?.position || "System Admin"}
-          </p>
+              <p className="text-yellow-300 text-xs font-bold uppercase tracking-wider mt-1">
+                {currentUser?.position || "System Admin"}
+              </p>
+            </>
+          )}
         </div>
+
 
         {/* Navigation Links */}
         <div className="px-4 w-full space-y-6">

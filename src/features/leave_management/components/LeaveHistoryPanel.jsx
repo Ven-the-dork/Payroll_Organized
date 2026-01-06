@@ -15,7 +15,7 @@ function ActionDropdown({ onApprove, onReject, attachmentUrl }) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="p-1.5 rounded hover:bg-gray-100 text-gray-600 transition-colors"
+        className="p-1.5 rounded hover:bg-gray-100  text-gray-600 transition-colors"
       >
         <ChevronDown size={16} />
       </button>

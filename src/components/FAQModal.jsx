@@ -131,13 +131,13 @@ export default function FAQModal({ open, onClose }) {
             <p className="font-semibold text-green-800">Contact</p>
             <p>
             Email:{" "}
-            <a className="text-green-700 hover:underline" href="reavenmiano58@gmail.com">
+            <a className="text-green-700 hover:underline" >
                reavenmiano58@gmail.com
             </a>
             </p>
             <p>
             Phone:{" "}
-            <a className="text-green-700 hover:underline" href="tel:+639612603451">
+            <a className="text-green-700 hover:underline" >
                 +63 961 260 3451
             </a>
             </p>

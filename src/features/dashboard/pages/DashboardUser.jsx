@@ -381,7 +381,7 @@ export default function DashboardUser() {
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
           <p className="text-center text-sm text-gray-500">
-            © 2025 CVSU. All rights reserved.
+            © 2026 CVSU. All rights reserved.
           </p>
         </div>
       </footer>

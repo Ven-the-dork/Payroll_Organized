@@ -6,6 +6,8 @@ import { supabase } from "../../../supabaseClient";
 import ProfileHeaderCard from "../components/ProfileHeaderCard";
 import ProfileForm from "../components/ProfileForm";
 import LoadingScreen from "../components/LoadingScreen";
+import SuccessToast from "../../leave_management/components/SuccessToast";
+import ErrorToast from "../../leave_management/components/ErrorToast";
 
 export default function UserProfile() {
   const navigate = useNavigate();
@@ -22,6 +24,11 @@ export default function UserProfile() {
     address: "",
     profileImageUrl: "",
   });
+
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const stored = sessionStorage.getItem("user");
@@ -65,7 +72,8 @@ export default function UserProfile() {
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
-        alert("Failed to load profile.");
+        setErrorMessage("Failed to load profile.");
+        setShowErrorToast(true);
       } finally {
         setLoading(false);
       }
@@ -84,12 +92,14 @@ export default function UserProfile() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Please select an image file (JPG, PNG, GIF, etc.)");
+      setErrorMessage("Please select an image file (JPG, PNG, GIF, etc.).");
+      setShowErrorToast(true);
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be smaller than 5MB");
+      setErrorMessage("Image must be smaller than 5MB.");
+      setShowErrorToast(true);
       return;
     }
 
@@ -100,7 +110,8 @@ export default function UserProfile() {
     }
     const user = JSON.parse(stored);
     if (!user.employeeId) {
-      alert("Employee ID not found");
+      setErrorMessage("Employee ID not found.");
+      setShowErrorToast(true);
       return;
     }
 
@@ -111,7 +122,7 @@ export default function UserProfile() {
       const fileName = `${user.employeeId}-${Date.now()}.${fileExt}`;
       const filePath = fileName;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(filePath, file, {
           cacheControl: "3600",
@@ -152,10 +163,12 @@ export default function UserProfile() {
         })
       );
 
-      alert("Profile picture updated successfully!");
+      setSuccessMessage("Profile picture updated successfully!");
+      setShowSuccessToast(true);
     } catch (err) {
       console.error("Error uploading avatar:", err);
-      alert("Failed to upload profile picture: " + err.message);
+      setErrorMessage("Failed to upload profile picture: " + err.message);
+      setShowErrorToast(true);
     } finally {
       setUploading(false);
     }
@@ -196,11 +209,13 @@ export default function UserProfile() {
         })
       );
 
-      alert("Profile updated successfully!");
+      setSuccessMessage("Profile updated successfully!");
+      setShowSuccessToast(true);
       navigate("/dashboard_user");
     } catch (err) {
       console.error("Error updating profile:", err);
-      alert("Failed to update profile: " + err.message);
+      setErrorMessage("Failed to update profile: " + err.message);
+      setShowErrorToast(true);
     } finally {
       setSaving(false);
     }
@@ -237,6 +252,17 @@ export default function UserProfile() {
           </p>
         </div>
       </div>
+
+      <SuccessToast
+        isOpen={showSuccessToast}
+        message={successMessage}
+        onClose={() => setShowSuccessToast(false)}
+      />
+      <ErrorToast
+        isOpen={showErrorToast}
+        message={errorMessage}
+        onClose={() => setShowErrorToast(false)}
+      />
     </div>
   );
 }

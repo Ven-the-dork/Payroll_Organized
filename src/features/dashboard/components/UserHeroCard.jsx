@@ -27,13 +27,6 @@ export default function UserHeroCard({
           >
             {hasClockedInToday ? "Clocked In" : "Not Clocked In Today"}
           </span>
-
-          <button
-            onClick={onOpenFaq}
-            className="rounded-full bg-white/10 hover:bg-white/20 px-4 py-1.5 text-xs font-bold text-white transition border border-white/10"
-          >
-            Help Center
-          </button>
         </div>
       </div>
 

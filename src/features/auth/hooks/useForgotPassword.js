@@ -21,7 +21,7 @@ export const useForgotPassword = () => {
       // Check if email exists in Supabase employees table
       const { data: employee, error: supabaseError } = await supabase
         .from('employees')
-        .select('email')
+        .select('email, last_password_reset_at')
         .eq('email', email)
         .single();
 
@@ -31,14 +31,32 @@ export const useForgotPassword = () => {
         return;
       }
 
+      // Check 24-hour limit
+      const now = Date.now();
+      if (employee.last_password_reset_at) {
+        const last = new Date(employee.last_password_reset_at).getTime();
+        const diffHours = (now - last) / (1000 * 60 * 60);
+        if (diffHours < 24) {
+          const remainingHours = Math.ceil(24 - diffHours);
+          setError(`You can request a password reset again in ${remainingHours} hour(s).`);
+          setLoading(false);
+          return;
+        }
+      }
+
       // Send Firebase password reset email
       await sendPasswordResetEmail(auth, email);
+
+      // Update last reset timestamp
+      await supabase
+        .from('employees')
+        .update({ last_password_reset_at: new Date().toISOString() })
+        .eq('email', email);
+
       setMessage('Password reset email sent! Please check your inbox.');
       setTimeout(() => navigate('/'), 3000);
-      
     } catch (err) {
       console.error('Password reset error:', err);
-      
       if (err.code === 'auth/user-not-found') {
         setError('No account found with this email address.');
       } else if (err.code === 'auth/invalid-email') {

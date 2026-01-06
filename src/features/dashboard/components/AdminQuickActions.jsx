@@ -8,7 +8,7 @@ export default function AdminQuickActions({ pendingLeavesCount, navigate }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <button
           onClick={() => navigate("/PayrollManagement")}
-          className="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-green-200 transition-all text-left group"
+          className="flex items-center gap-4 p-5 bg-white rounded-xl border cursor-pointer border-gray-100 shadow-sm hover:shadow-md hover:border-green-200 transition-all text-left group"
         >
           <div className="p-3 rounded-full bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white transition-colors">
             <CreditCard size={24} />
@@ -26,7 +26,7 @@ export default function AdminQuickActions({ pendingLeavesCount, navigate }) {
 
         <button
           onClick={() => navigate("/leave-management")}
-          className="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all text-left group"
+          className="flex items-center gap-4 p-5 bg-white rounded-xl border cursor-pointer border-gray-100 shadow-sm hover:shadow-md hover:border-orange-200 transition-all text-left group"
         >
           <div className="p-3 rounded-full bg-orange-50 text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors">
             <Clock size={24} />

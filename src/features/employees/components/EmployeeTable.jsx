@@ -20,7 +20,7 @@ function ActionDropdown({ onViewProfile, onDelete }) {
     <div className="relative inline-block text-left" ref={ref}>
       <button
         onClick={() => setOpen((s) => !s)}
-        className="inline-flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-all"
+        className="inline-flex items-center gap-2 rounded-lg cursor-pointer bg-gray-50 border border-gray-200 px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-all"
       >
         Actions
         <Settings size={14} />
@@ -85,7 +85,7 @@ export default function EmployeeTable({
           <div className="flex bg-gray-50 p-1 rounded-lg border border-gray-200">
             <button
               onClick={onToggleSortDirection}
-              className="p-2 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
+              className="p-2 hover:bg-white hover:shadow-sm rounded-md cursor-pointer transition-all text-gray-600"
               title={`Sort: ${sortDirection === "asc" ? "A → Z" : "Z → A"}`}
             >
               <Filter size={18} />
@@ -93,7 +93,7 @@ export default function EmployeeTable({
           </div>
           <button
             onClick={onToggleAddForm}
-            className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md shadow-green-100"
+            className="flex items-center gap-2 bg-green-700 cursor-pointer hover:bg-green-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md shadow-green-100"
           >
             <span>{showAddForm ? "Close Form" : "Add Employee"}</span>
           </button>
