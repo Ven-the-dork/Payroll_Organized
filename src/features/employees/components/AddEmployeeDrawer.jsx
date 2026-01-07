@@ -68,8 +68,8 @@ export default function AddEmployeeDrawer({
                   className="w-full rounded-lg border border-gray-200 p-2.5 text-sm bg-white focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Select...</option>
-                  <option value="Full time">Full time</option>
-                  <option value="Part time">Part time</option>
+                  <option value="Regular">Regular</option>
+                  <option value="Job Order">Job Order</option>
                 </select>
               </label>
 

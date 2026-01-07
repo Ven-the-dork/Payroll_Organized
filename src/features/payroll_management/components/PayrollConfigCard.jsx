@@ -21,7 +21,7 @@ export default function PayrollConfigCard({
               type="date"
               value={startDate}
               onChange={(e) => onChangeStart(e.target.value)}
-              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full p-2.5 bg-gray-50  cursor-pointer border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
             />
           </label>
           <label className="block space-y-1.5">
@@ -32,7 +32,7 @@ export default function PayrollConfigCard({
               type="date"
               value={endDate}
               onChange={(e) => onChangeEnd(e.target.value)}
-              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full p-2.5 bg-gray-50 border border-gray-200 cursor-pointer rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
             />
           </label>
         </div>

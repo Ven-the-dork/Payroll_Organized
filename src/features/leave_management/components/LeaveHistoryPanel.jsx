@@ -12,22 +12,22 @@ function ActionDropdown({ onApprove, onReject, attachmentUrl }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative">
+    <div className="relative ">
       <button
         onClick={() => setOpen(!open)}
-        className="p-1.5 rounded hover:bg-gray-100  text-gray-600 transition-colors"
+        className="p-1.5 rounded hover:bg-gray-100 cursor-pointer text-gray-600 transition-colors"
       >
         <ChevronDown size={16} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-20 w-40">
+        <div className="absolute right-0 top-8 bg-white cursor-pointer  shadow-xl border border-gray-100 rounded-lg overflow-hidden z-20 w-40">
           <button
             onClick={() => {
               onApprove();
               setOpen(false);
             }}
-            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-green-600 hover:bg-green-50 transition-colors"
+            className="flex items-center gap-2 w-full px-4 cursor-pointer py-2.5 text-sm text-green-600 hover:bg-green-50 transition-colors"
           >
             <CheckCircle size={16} />
             Approve
@@ -37,7 +37,7 @@ function ActionDropdown({ onApprove, onReject, attachmentUrl }) {
               onReject();
               setOpen(false);
             }}
-            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+            className="flex items-center gap-2 w-full px-4 cursor-pointer py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
           >
             <XCircle size={16} />
             Reject
@@ -47,7 +47,7 @@ function ActionDropdown({ onApprove, onReject, attachmentUrl }) {
               href={attachmentUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors border-t border-gray-100"
+              className="flex items-center gap-2 w-full px-4 cursor-pointer py-2.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors border-t border-gray-100"
             >
               <Paperclip size={16} />
               View Attachment

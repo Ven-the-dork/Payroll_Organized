@@ -63,7 +63,7 @@ export default function LeaveRecallPanel({
                   <td className="p-5 text-right">
                     <button
                       onClick={() => onOpenRecall(leave)}
-                      className="px-4 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-full hover:bg-orange-700 shadow-sm transition"
+                      className="px-4 py-1.5 bg-orange-600 cursor-pointer text-white text-xs font-bold rounded-full hover:bg-orange-700 shadow-sm transition"
                     >
                       Recall Now
                     </button>

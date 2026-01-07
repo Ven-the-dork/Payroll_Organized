@@ -15,14 +15,14 @@ export default function TimeTrackingFilters({
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <label className="space-y-1">
-          <span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
+          <span className="text-xs font-bold text-gray-500  uppercase flex items-center gap-1">
             <CalendarDays size={12} /> Date
           </span>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => onChangeDate(e.target.value)}
-            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
+            className="w-full p-2.5 bg-gray-50 border cursor-pointer border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
           />
         </label>
 
@@ -33,7 +33,7 @@ export default function TimeTrackingFilters({
           <select
             value={selectedDepartment}
             onChange={(e) => onChangeDepartment(e.target.value)}
-            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
+            className="w-full p-2.5 bg-gray-50 border cursor-pointer border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
           >
             <option value="All">All Departments</option>
             <option value="IT">IT</option>
@@ -48,7 +48,7 @@ export default function TimeTrackingFilters({
           <select
             value={selectedStatus}
             onChange={(e) => onChangeStatus(e.target.value)}
-            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
+            className="w-full p-2.5 bg-gray-50 border cursor-pointer border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none"
           >
             <option value="All">All Status</option>
             <option value="Present">Present</option>

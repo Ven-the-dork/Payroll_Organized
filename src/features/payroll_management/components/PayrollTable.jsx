@@ -42,7 +42,7 @@ export default function PayrollTable({
               <th className="p-4 w-12 text-center">
                 <button
                   onClick={onToggleAll}
-                  className="text-gray-400 hover:text-green-600"
+                  className="text-gray-400 cursor-pointer hover:text-green-600"
                 >
                   {allVisibleSelected ? (
                     <CheckSquare size={18} />
@@ -88,7 +88,7 @@ export default function PayrollTable({
                         className={`${
                           isSelected
                             ? "text-green-600"
-                            : "text-gray-300 group-hover:text-gray-400"
+                            : "text-gray-300 cursor-pointer group-hover:text-gray-400"
                         }`}
                       >
                         {isSelected ? (

@@ -181,7 +181,7 @@ export default function LeaveSettingsPanel({
                           openDropdown === plan.id ? null : plan.id
                         )
                       }
-                      className="text-gray-400 hover:text-green-700"
+                      className="text-gray-400 cursor-pointer hover:text-green-700"
                     >
                       <Settings size={16} />
                     </button>
@@ -190,13 +190,13 @@ export default function LeaveSettingsPanel({
                       <div className="absolute right-8 top-2 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-20 w-32">
                         <button
                           onClick={() => onStartEdit(plan)}
-                          className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-xs"
+                          className="block w-full text-left px-4 cursor-pointer py-2 hover:bg-gray-50 text-xs"
                         >
                           Edit
                         </button>
                       <button
                         onClick={() => onDeletePlan(plan)}  // Changed from onDeletePlan(plan.id)
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        className="block w-full text-left px-4 py-2 cursor-pointer text-sm text-red-600 hover:bg-red-50 transition-colors"
                       >
                         Delete
                       </button>

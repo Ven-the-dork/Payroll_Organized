@@ -39,7 +39,7 @@ export default function AuditLogsFilterBar({
           <select
             value={filterAction}
             onChange={(e) => setFilterAction(e.target.value)}
-            className="w-full py-2.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none cursor-pointer"
+            className="w-full py-2.5 px-3 bg-gray-50 border cursor-pointer border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none cursor-pointer"
           >
             <option value="all">All Actions</option>
             <option value="created_employee">Created Employee</option>
@@ -50,7 +50,7 @@ export default function AuditLogsFilterBar({
         <div className="md:col-span-4 flex gap-2">
           <button
             onClick={toggleSortDirection}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-bold transition shadow-sm"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 cursor-pointer bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-bold transition shadow-sm"
           >
             <ArrowUpDown size={16} />
             {sortDirection === "asc" ? "Oldest" : "Newest"}
