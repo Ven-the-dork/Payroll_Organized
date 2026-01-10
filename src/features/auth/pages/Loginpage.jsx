@@ -22,7 +22,7 @@ export default function LoginPage() {
             id="secret-logo"
             src={cvsuLogo}
             alt="Company Logo"
-            className="w-24 h-24 mx-auto mb-4 cursor-pointer"
+            className="w-24 h-24 mx-auto mb-4 "
           />
           <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2">
             Payroll Management System

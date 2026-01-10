@@ -12,11 +12,12 @@ import SuccessToast from "../components/SuccessToast";
 import ErrorToast from "../components/ErrorToast";
 import {
   fetchEmployeeIdByFirebaseUid,
+  fetchEmployeeWithCategory, // ✅ ADDED
   markEmployeeOnline,
   markEmployeeOffline,
 } from "../../../services/employeeService";
 import {
-  fetchLeavePlans,
+  fetchLeavePlansForCategory, // ✅ CHANGED
   fetchUserLeaveApplications,
   fetchUserLeaveHistory,
   insertLeaveApplication,
@@ -67,6 +68,7 @@ export default function UserApplyForLeave() {
 
   const [currentUser, setCurrentUser] = useState(null);
   const [employeeId, setEmployeeId] = useState(null);
+  const [employeeCategory, setEmployeeCategory] = useState(null); // ✅ ADDED
 
   const [leaveBalances, setLeaveBalances] = useState({});
 
@@ -110,7 +112,7 @@ export default function UserApplyForLeave() {
     setAttachment(null);
   }
 
-  // Load user + employeeId
+  // ✅ UPDATED - Load user + employeeId + category
   useEffect(() => {
     async function loadUser() {
       const stored = sessionStorage.getItem("user");
@@ -120,8 +122,12 @@ export default function UserApplyForLeave() {
         const user = JSON.parse(stored);
         setCurrentUser(user);
 
-        const id = await fetchEmployeeIdByFirebaseUid(user.uid);
-        if (id) setEmployeeId(id);
+        // Fetch employee details with category
+        const employeeData = await fetchEmployeeWithCategory(user.uid);
+        if (employeeData) {
+          setEmployeeId(employeeData.id);
+          setEmployeeCategory(employeeData.category); // Store category
+        }
       } catch (err) {
         console.error("Error loading user:", err);
       }
@@ -161,17 +167,20 @@ export default function UserApplyForLeave() {
     };
   }, [employeeId]);
 
-  // Fetch leave plans
+  // ✅ UPDATED - Fetch leave plans based on employee category
   useEffect(() => {
     async function loadLeaveOptions() {
+      if (!employeeCategory) return; // Wait for category to load
+
       setLoadingLeaves(true);
       try {
-        const plans = await fetchLeavePlans();
+        const plans = await fetchLeavePlansForCategory(employeeCategory);
         setLeaveOptions(
           plans.map((row) => ({
             id: row.id,
             label: row.name,
             days: row.duration_days,
+            isPaid: row.is_paid, // ✅ ADDED to track paid/unpaid
           }))
         );
       } catch (error) {
@@ -183,7 +192,7 @@ export default function UserApplyForLeave() {
     }
 
     loadLeaveOptions();
-  }, []);
+  }, [employeeCategory]); // ✅ CHANGED dependency
 
   // Fetch leave history
   useEffect(() => {
@@ -436,6 +445,7 @@ export default function UserApplyForLeave() {
                     days={opt.days}
                     label={opt.label}
                     remaining={leaveBalances[opt.id]}
+                    isPaid={opt.isPaid} // ✅ ADDED
                     onApply={() => openModal(opt)}
                   />
                 ))}

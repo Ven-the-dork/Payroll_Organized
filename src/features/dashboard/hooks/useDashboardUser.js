@@ -4,18 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../../firebaseConfig";
 import { clockifyClockIn } from "../../../utils/clockifyClient";
-import {
-  fetchEmployeeIdByFirebaseUid,
-  markEmployeeOnline,
-  markEmployeeOffline,
-} from "../../../services/employeeService";
-import {
-  fetchLeavePlans,
-  fetchUserLeaveApplications,
-} from "../../../services/leaveService";
 import { hasAttendanceToday } from "../../../services/attendanceService";
 
-const DEFAULT_PROFILE = { /* same as before */ };
 const TZ = "Asia/Singapore";
 
 function getSgShiftDate(date = new Date()) { /* same helper */ }
@@ -27,7 +17,6 @@ export function useDashboardUser() {
   const [attendanceMessage, setAttendanceMessage] = useState("");
   const [activeTab, setActiveTab] = useState("dashboard");
   const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const [currentUser, setCurrentUser] = useState(null);
   const [employeeId, setEmployeeId] = useState(null);
   const [hasClockedInToday, setHasClockedInToday] = useState(false);
@@ -120,7 +109,7 @@ export function useDashboardUser() {
     setActiveTab,
     profileModalOpen,
     setProfileModalOpen,
-    profile,
+
     handleProfileChange,
     currentUser,
     employeeId,

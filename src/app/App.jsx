@@ -6,7 +6,6 @@ import Dashboard from "../features/dashboard/pages/DashboardAdmin";
 import EmployeeManagement from "../features/employees/pages/EmployeeManagement";
 import LeaveManagement from "../features/leave_management/pages/LeaveManagement";
 import LoginPage from "../features/auth/pages/Loginpage";
-import AdminLogin from "../features/auth/pages/Adminloginpage";
 import AuditLogs from "../features/audit_logs/pages/AuditLogs";
 import DashboardUser from "../features/dashboard/pages/DashboardUser";
 import Applyforleave from "../features/leave_management/pages/UserApplyForLeave";
@@ -23,7 +22,6 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         {/* Admin-only Routes */}
         <Route

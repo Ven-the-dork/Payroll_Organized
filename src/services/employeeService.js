@@ -120,3 +120,15 @@ export async function markEmployeeOffline(employeeId) {
 
   if (error) throw error;
 }
+
+// Missing function - need to add
+export async function fetchEmployeeWithCategory(firebaseUid) {
+  const { data, error } = await supabase
+    .from("employees")
+    .select("id, category, full_name")
+    .eq("firebase_uid", firebaseUid)
+    .single();
+  if (error) throw error;
+  return data;
+}
+

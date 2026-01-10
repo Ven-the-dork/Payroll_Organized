@@ -14,32 +14,7 @@ export function useUserLogin() {
   const [error, setError] = useState("");
 
   // secret logo click logic
-  useEffect(() => {
-    let clickCount = 0;
-    let clickTimer = null;
-
-    const handleLogoClick = () => {
-      clickCount++;
-      if (clickTimer) clearTimeout(clickTimer);
-
-      if (clickCount === 5) {
-        navigate("/admin-login");
-        clickCount = 0;
-      }
-
-      clickTimer = setTimeout(() => {
-        clickCount = 0;
-      }, 3000);
-    };
-
-    const logo = document.getElementById("secret-logo");
-    if (logo) logo.addEventListener("click", handleLogoClick);
-
-    return () => {
-      if (logo) logo.removeEventListener("click", handleLogoClick);
-      if (clickTimer) clearTimeout(clickTimer);
-    };
-  }, [navigate]);
+ 
 
   const handleLogin = async (e) => {
     e.preventDefault();

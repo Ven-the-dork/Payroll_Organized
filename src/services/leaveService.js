@@ -13,6 +13,26 @@ export async function fetchLeavePlans() {
   return data || [];
 }
 
+// User: fetch leave plans filtered by employee category
+export async function fetchLeavePlansForCategory(employeeCategory) {
+  const { data, error } = await supabase
+    .from("leave_plans")
+    .select("*")
+    .eq("is_active", true)
+    .order("name");
+  
+  if (error) throw error;
+  
+  // Filter based on category
+  if (employeeCategory === "Job Order") {
+    // Only return unpaid leave types for Job Order employees
+    return (data || []).filter(plan => plan.is_paid === false);
+  }
+  
+  // Regular employees get all leave types (paid and unpaid)
+  return data || [];
+}
+
 // User: leave usage for balance calculations (DashboardUser)
 export async function fetchUserLeaveApplications(firebaseUid) {
   const { data, error } = await supabase

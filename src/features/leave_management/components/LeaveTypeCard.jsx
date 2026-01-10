@@ -1,76 +1,62 @@
 // src/features/leave/components/LeaveTypeCard.jsx
-import { FileText } from "lucide-react";
+import { FileText, DollarSign, Ban } from "lucide-react";
 
-export default function LeaveTypeCard({ days, label, remaining, onApply }) {
+export default function LeaveTypeCard({ days, label, remaining, isPaid, onApply }) {
   const balance = remaining !== undefined ? remaining : days;
   const isExhausted = balance === 0;
 
   return (
-    <div
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
-        isExhausted
-          ? "bg-gray-100 border border-gray-200"
-          : "bg-gradient-to-br from-green-800 to-green-900 border border-green-700 shadow-xl shadow-green-900/20"
-      }`}
-    >
-      {!isExhausted && (
-        <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-yellow-400/10 blur-2xl group-hover:bg-yellow-400/20 transition-all duration-500" />
-      )}
-
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div
-            className={`p-2 rounded-xl ${
-              isExhausted ? "bg-gray-200" : "bg-white/10"
-            }`}
-          >
-            <FileText
-              className={isExhausted ? "text-gray-400" : "text-yellow-300"}
-              size={24}
-            />
+    <div className="relative bg-gradient-to-br from-green-700 to-green-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+      {/* Top Section: Icon + Status + Paid/Unpaid Badge */}
+      <div className="flex items-start justify-between mb-6">
+        {/* Icon + Available Status */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center">
+            <FileText className="text-green-800" size={20} />
           </div>
-          <span
-            className={`text-xs font-bold uppercase tracking-wider ${
-              isExhausted ? "text-gray-400" : "text-green-200"
-            }`}
-          >
-            {isExhausted ? "Unavailable" : "Available"}
+          <span className="text-white text-sm font-semibold uppercase tracking-wide">
+            {isExhausted ? "EXHAUSTED" : "AVAILABLE"}
           </span>
         </div>
 
-        <h3
-          className={`text-4xl font-extrabold tracking-tight mb-1 ${
-            isExhausted ? "text-gray-400" : "text-white"
-          }`}
-        >
-          {balance}
-        </h3>
-        <p
-          className={`text-sm font-medium ${
-            isExhausted ? "text-gray-400" : "text-green-100/80"
-          }`}
-        >
-          days remaining
-        </p>
-        <p
-          className={`mt-4 text-lg font-bold ${
-            isExhausted ? "text-gray-500" : "text-white"
-          }`}
-        >
-          {label}
-        </p>
+        {/* Paid/Unpaid Badge */}
+        <div className="flex items-center gap-1">
+          {isPaid ? (
+            <div className="flex items-center gap-1 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md">
+              <DollarSign size={12} />
+              <span>PAID</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md">
+              <Ban size={12} />
+              <span>UNPAID</span>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Days Remaining */}
+      <div className="mb-4">
+        <div className="text-5xl font-extrabold text-white leading-none">
+          {balance}
+        </div>
+        <p className="text-white/80 text-sm font-medium mt-1">days remaining</p>
+      </div>
+
+      {/* Leave Type Label */}
+      <h3 className="text-white text-lg font-bold mb-6">{label}</h3>
+
+      {/* Apply Button */}
       <button
         onClick={onApply}
         disabled={isExhausted}
-        className={`mt-6 w-full rounded-xl py-3 text-sm font-bold shadow-sm transition-all transform active:scale-95 ${
+        className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-md ${
           isExhausted
-            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-            : "bg-[#fbbf24] text-green-900 hover:bg-[#f59e0b] hover:shadow-lg"
+            ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+            : "bg-yellow-400 text-green-900 hover:bg-yellow-300 active:scale-95"
         }`}
       >
-        {isExhausted ? "Limit Reached" : "Apply Now"}
+        {isExhausted ? "No Balance" : "Apply Now"}
       </button>
     </div>
   );

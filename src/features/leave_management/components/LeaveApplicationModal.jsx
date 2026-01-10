@@ -1,10 +1,9 @@
 // src/features/leave/components/LeaveApplicationModal.jsx
-import { X, Paperclip, FileText } from "lucide-react";
+import { X, Paperclip, FileText, DollarSign, Ban } from "lucide-react";
 
 // copy of your helper for the modal summary
 function calculateDuration(start, end) {
   if (!start || !end) return 0;
-
   const startDate = new Date(start);
   const endDate = new Date(end);
   if (endDate < startDate) return 0;
@@ -34,40 +33,50 @@ export default function LeaveApplicationModal({
   onSubmit,
   submitting,
 }) {
+  const requestedDays = calculateDuration(startDate, endDate);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-8 relative shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">New Application</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Applying for{" "}
-              <span className="text-green-700 font-bold">
-                {leaveType?.label}
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <FileText className="text-green-600" size={24} />
+              Applying for {leaveType?.label}
+            </h2>
+            {/* Paid/Unpaid Indicator */}
+            <div className="mt-2 flex items-center gap-2">
+              {leaveType?.isPaid ? (
+                <div className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                  <DollarSign size={14} />
+                  <span>Paid Leave</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold">
+                  <Ban size={14} />
+                  <span>Unpaid Leave</span>
+                </div>
+              )}
+              <span className="text-sm text-gray-600">
+                {remainingBalance} days available
               </span>
-            </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition"
+            className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-5">
-          <div className="bg-green-50 rounded-xl px-4 py-3 flex justify-between items-center border border-green-100">
-            <span className="text-sm font-medium text-green-800">
-              Current Balance
-            </span>
-            <span className="text-lg font-bold text-green-700">
-              {remainingBalance} Days
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+        {/* Form */}
+        <form onSubmit={onSubmit} className="p-6 space-y-5">
+          {/* Date Range */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Start Date
               </label>
               <input
@@ -75,11 +84,11 @@ export default function LeaveApplicationModal({
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 required
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 End Date
               </label>
               <input
@@ -87,83 +96,73 @@ export default function LeaveApplicationModal({
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 required
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
               />
             </div>
           </div>
 
-          <div className="flex justify-between items-center px-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Weekends are automatically excluded
-            </span>
-            <span className="text-sm font-bold text-gray-700">
-              Total:{" "}
-              <span className="text-green-600">
-                {calculateDuration(startDate, endDate)} days
-              </span>
-            </span>
-          </div>
+          {/* Duration Summary */}
+          {startDate && endDate && requestedDays > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                <span className="font-semibold">Duration:</span> {requestedDays}{" "}
+                business day{requestedDays !== 1 ? "s" : ""}
+              </p>
+              <p className="text-sm text-blue-800 mt-1">
+                <span className="font-semibold">Remaining after:</span>{" "}
+                {Math.max(0, remainingBalance - requestedDays)} days
+              </p>
+            </div>
+          )}
 
+          {/* Reason */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
-              Supporting Document{" "}
-              <span className="normal-case font-normal text-gray-400">
-                (Optional)
-              </span>
-            </label>
-            <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-200 border-dashed rounded-xl cursor-pointer hover:bg-gray-50 hover:border-green-400 transition group">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                {attachment ? (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <FileText size={20} />
-                    <p className="text-sm font-medium truncate max-w-[200px]">
-                      {attachment.name}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1 text-gray-400 group-hover:text-green-600 transition-colors">
-                    <Paperclip size={20} />
-                    <p className="text-xs font-medium">Click to upload file</p>
-                  </div>
-                )}
-              </div>
-              <input
-                type="file"
-                className="hidden"
-                accept=".pdf,.png,.jpg,.jpeg"
-                onChange={(e) =>
-                  e.target.files && setAttachment(e.target.files[0])
-                }
-              />
-            </label>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Reason for Leave
             </label>
             <textarea
-              rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
-              placeholder="Please describe why you are requesting leave..."
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition resize-none"
+              rows={4}
+              placeholder="Please provide a reason for your leave application..."
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition resize-none"
             />
           </div>
 
-          <div className="flex gap-3 pt-2">
+          {/* Attachment */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Attachment (Optional)
+            </label>
+            <div className="relative">
+              <input
+                type="file"
+                onChange={(e) => setAttachment(e.target.files?.[0] || null)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+              />
+              {attachment && (
+                <p className="mt-2 text-sm text-gray-600 flex items-center gap-2">
+                  <Paperclip size={16} />
+                  {attachment.name}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition"
+              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 bg-green-700 text-white px-4 py-3 rounded-xl font-bold text-sm shadow-lg shadow-green-700/30 hover:bg-green-800 hover:shadow-xl transition transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {submitting ? "Submitting..." : "Submit Application"}
             </button>
