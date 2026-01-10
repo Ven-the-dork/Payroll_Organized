@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../../firebaseConfig";
+import { supabase } from "../../../supabaseClient"; // ✅ ADDED
 
 import UserTopBar from "../../../components/UserTopBar";
 import FAQModal from "../../../components/FAQModal";
@@ -15,9 +16,8 @@ import {
   User,
   Calendar,
   Clock,
-  X,                // ← add this
+  X,
 } from "lucide-react";
-
 
 import {
   fetchEmployeeIdByFirebaseUid,
@@ -86,6 +86,7 @@ export default function DashboardUser() {
 
   const [currentUser, setCurrentUser] = useState(null);
   const [employeeId, setEmployeeId] = useState(null);
+  const [employeeCategory, setEmployeeCategory] = useState(null); // ✅ ADDED
 
   const [hasClockedInToday, setHasClockedInToday] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
@@ -141,6 +142,26 @@ export default function DashboardUser() {
 
     loadEmployeeId();
   }, [currentUser, employeeId]);
+
+  // ✅ NEW: Fetch employee category from database
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (!employeeId) return;
+      try {
+        const { data, error } = await supabase
+          .from("employees")
+          .select("category")
+          .eq("id", employeeId)
+          .single();
+        
+        if (error) throw error;
+        if (data) setEmployeeCategory(data.category);
+      } catch (err) {
+        console.error("Failed to fetch employee category:", err);
+      }
+    };
+    fetchCategory();
+  }, [employeeId]);
 
   // Sync clock status
   const syncClockStatus = useCallback(async () => {
@@ -198,14 +219,23 @@ export default function DashboardUser() {
 
   const handleClockIn = async () => {
     if (clockLoading) return;
-
+    
     if (hasClockedInToday) {
       setAttendanceMessage("Already clocked in today.");
       return;
     }
 
+    // Check if today is Sunday
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    
+    if (dayOfWeek === 0) {
+      setAttendanceMessage("Clock in is not allowed on Sundays. Please try again on a weekday.");
+      return;
+    }
+
     setClockLoading(true);
-    setAttendanceMessage("");
+    setAttendanceMessage(""); 
 
     try {
       const res = await clockifyClockIn();
@@ -243,14 +273,22 @@ export default function DashboardUser() {
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Fetch leave plans
+  // ✅ UPDATED: Fetch leave plans - filtered by employee category
   useEffect(() => {
     async function fetchLeaveOptions() {
+      if (!employeeCategory) return; // Wait for category
+      
       setLoadingLeaves(true);
       try {
         const plans = await fetchLeavePlans();
+        
+        // Filter: Job Order only sees unpaid leaves
+        const filteredPlans = employeeCategory === "Job Order"
+          ? plans.filter(plan => plan.is_paid === false)
+          : plans; // Regular sees all
+        
         setLeaveOptions(
-          plans.map((row) => ({
+          filteredPlans.map((row) => ({
             id: row.id,
             label: row.name,
             days: row.duration_days,
@@ -265,7 +303,7 @@ export default function DashboardUser() {
     }
 
     fetchLeaveOptions();
-  }, []);
+  }, [employeeCategory]); // ✅ CHANGED: Depend on employeeCategory
 
   // Calculate leave balances
   useEffect(() => {
