@@ -1,6 +1,7 @@
 // src/services/leaveService.js
 import { supabase } from "../supabaseClient";
 
+
 // Admin: list active leave plans (settings + select options)
 export async function fetchLeavePlans() {
   const { data, error } = await supabase
@@ -9,9 +10,11 @@ export async function fetchLeavePlans() {
     .eq("is_active", true)
     .order("name");
 
+
   if (error) throw error;
   return data || [];
 }
+
 
 // User: fetch leave plans filtered by employee category
 export async function fetchLeavePlansForCategory(employeeCategory) {
@@ -33,6 +36,7 @@ export async function fetchLeavePlansForCategory(employeeCategory) {
   return data || [];
 }
 
+
 // User: leave usage for balance calculations (DashboardUser)
 export async function fetchUserLeaveApplications(firebaseUid) {
   const { data, error } = await supabase
@@ -41,9 +45,11 @@ export async function fetchUserLeaveApplications(firebaseUid) {
     .eq("firebase_uid", firebaseUid)
     .in("status", ["approved", "pending"]);
 
+
   if (error) throw error;
   return data || [];
 }
+
 
 // Admin: recall view - only currently active & recallable leaves
 export async function fetchOngoingRecallableLeaves(todayIso) {
@@ -59,10 +65,12 @@ export async function fetchOngoingRecallableLeaves(todayIso) {
     .gte("end_date", todayIso)
     .order("start_date", { ascending: false });
 
+
   if (error) throw error;
   const rows = data || [];
   return rows.filter((leave) => leave.leave_plans?.allow_recall === true);
 }
+
 
 // Admin: create / manage leave plans
 export async function createLeavePlan(payload) {
@@ -72,9 +80,11 @@ export async function createLeavePlan(payload) {
     .select("*")
     .single();
 
+
   if (error) throw error;
   return data;
 }
+
 
 export async function updateLeavePlan(id, updates) {
   const { error } = await supabase
@@ -82,8 +92,10 @@ export async function updateLeavePlan(id, updates) {
     .update(updates)
     .eq("id", id);
 
+
   if (error) throw error;
 }
+
 
 export async function softDeleteLeavePlan(id) {
   const { error } = await supabase
@@ -91,8 +103,10 @@ export async function softDeleteLeavePlan(id) {
     .update({ is_active: false })
     .eq("id", id);
 
+
   if (error) throw error;
 }
+
 
 // Admin actions: approve / reject / recall
 export async function updateLeaveStatus(id, updates) {
@@ -101,8 +115,10 @@ export async function updateLeaveStatus(id, updates) {
     .update(updates)
     .eq("id", id);
 
+
   if (error) throw error;
 }
+
 
 // For notifications after action
 export async function getLeaveApplicationForNotification(id) {
@@ -116,14 +132,17 @@ export async function getLeaveApplicationForNotification(id) {
     .eq("id", id)
     .single();
 
+
   if (error) throw error;
   return data;
 }
+
 
 export async function insertNotification(payload) {
   const { error } = await supabase.from("notifications").insert(payload);
   if (error) throw error;
 }
+
 
 // Admin: list all leave applications with employee + plan info for history tab
 export async function fetchAdminLeaveApplications() {
@@ -136,9 +155,11 @@ export async function fetchAdminLeaveApplications() {
     )
     .order("created_at", { ascending: false });
 
+
   if (error) throw error;
   return data || [];
 }
+
 
 // User: full history list for Apply Leave page
 export async function fetchUserLeaveHistory(firebaseUid) {
@@ -148,9 +169,11 @@ export async function fetchUserLeaveHistory(firebaseUid) {
     .eq("firebase_uid", firebaseUid)
     .order("applied_at", { ascending: false });
 
+
   if (error) throw error;
   return data || [];
 }
+
 
 // User: create a new leave application
 export async function insertLeaveApplication(payload) {
@@ -160,6 +183,134 @@ export async function insertLeaveApplication(payload) {
     .select("*")
     .single();
 
+
   if (error) throw error;
   return data;
+}
+
+
+/**
+ * Calculate working days between two dates (exclude Sundays only)
+ */
+function calculateWorkingDays(startDate, endDate) {
+  if (!startDate || !endDate) return 0;
+  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  if (end < start) return 0;
+
+  let count = 0;
+  const current = new Date(start);
+  
+  while (current <= end) {
+    const day = current.getDay();
+    if (day !== 0) count++; // Exclude Sunday only
+    current.setDate(current.getDate() + 1);
+  }
+  
+  return count;
+}
+
+
+/**
+ * Recall a leave and refund unused days
+ */
+export async function recallLeaveWithRefund(
+  leaveApplicationId,
+  newResumptionDate,
+  recallReason,
+  reviewedBy
+) {
+  try {
+    // 1. Get the leave application details
+    const { data: leaveApp, error: fetchError } = await supabase
+      .from("leave_applications")
+      .select(`
+        *,
+        employees!inner(id, full_name),
+        leave_plans!inner(id, name, duration_days)
+      `)
+      .eq("id", leaveApplicationId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const startDate = leaveApp.start_date;
+    const endDate = leaveApp.end_date;
+    const employeeId = leaveApp.employee_id;
+    const leavePlanId = leaveApp.leave_plan_id;
+
+    // 2. Calculate days used and days to refund
+    const resumeDate = new Date(newResumptionDate);
+    const lastLeaveDate = new Date(resumeDate);
+    lastLeaveDate.setDate(lastLeaveDate.getDate() - 1);
+    const lastLeaveDateStr = lastLeaveDate.toISOString().split('T')[0];
+
+    // Days used (start to day before resumption)
+    const daysUsed = calculateWorkingDays(startDate, lastLeaveDateStr);
+    
+    // Days to refund (resumption date to original end date)
+    const daysToRefund = calculateWorkingDays(newResumptionDate, endDate);
+
+    console.log("📊 Recall Calculation:", {
+      originalPeriod: `${startDate} to ${endDate}`,
+      newResumptionDate,
+      daysUsed,
+      daysToRefund
+    });
+
+    // 3. Update leave application status
+    const { error: updateError } = await supabase
+      .from("leave_applications")
+      .update({
+        status: "recalled",
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: reviewedBy,
+        recall_date: newResumptionDate,
+        recall_reason: recallReason,
+        days_used: daysUsed,
+        days_refunded: daysToRefund
+      })
+      .eq("id", leaveApplicationId);
+
+    if (updateError) throw updateError;
+
+    // 4. Refund unused days to employee's leave balance
+    if (daysToRefund > 0) {
+      const { data: currentBalance, error: balanceError } = await supabase
+        .from("leave_balances")
+        .select("remaining_days")
+        .eq("employee_id", employeeId)
+        .eq("leave_plan_id", leavePlanId)
+        .single();
+
+      if (balanceError) {
+        console.warn("No leave balance found, skipping refund");
+      } else {
+        const newBalance = currentBalance.remaining_days + daysToRefund;
+
+        const { error: refundError } = await supabase
+          .from("leave_balances")
+          .update({ remaining_days: newBalance })
+          .eq("employee_id", employeeId)
+          .eq("leave_plan_id", leavePlanId);
+
+        if (refundError) throw refundError;
+
+        console.log(`✅ Refunded ${daysToRefund} days to employee ${employeeId}`);
+      }
+    }
+
+    return {
+      success: true,
+      daysUsed,
+      daysToRefund,
+      message: `Leave recalled. ${daysUsed} days used, ${daysToRefund} days refunded.`
+    };
+
+  } catch (error) {
+    console.error("RECALL_WITH_REFUND_ERROR:", error);
+    throw error;
+  }
 }
