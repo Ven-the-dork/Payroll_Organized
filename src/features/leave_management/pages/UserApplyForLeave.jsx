@@ -215,33 +215,40 @@ export default function UserApplyForLeave() {
   }, [currentUser]);
 
   // Calculate balances
-  useEffect(() => {
-    async function calculateBalances() {
-      if (!currentUser?.uid || leaveOptions.length === 0) return;
-
-      try {
-        const applications = await fetchUserLeaveApplications(currentUser.uid);
-
-        const usage = {};
-        (applications || []).forEach((app) => {
-          usage[app.leave_plan_id] =
-            (usage[app.leave_plan_id] || 0) + app.duration_days;
-        });
-
-        const newBalances = {};
-        leaveOptions.forEach((plan) => {
-          const used = usage[plan.id] || 0;
-          newBalances[plan.id] = Math.max(0, plan.days - used);
-        });
-
-        setLeaveBalances(newBalances);
-      } catch (error) {
-        console.error("Error fetching leave usage:", error);
+    useEffect(() => {
+      async function calculateBalances() {
+        if (!currentUser?.uid || leaveOptions.length === 0) return;
+    
+        try {
+          const applications = await fetchUserLeaveApplications(currentUser.uid);
+    
+          const usage = {};
+          (applications || []).forEach((app) => {
+            //Use days_used for recalled leaves, duration_days for others
+            let daysToCount = app.duration_days;
+            
+            if (app.status === 'recalled' && app.days_used !== null) {
+              daysToCount = app.days_used; // Only count actually used days
+            }
+            
+            usage[app.leave_plan_id] =
+              (usage[app.leave_plan_id] || 0) + daysToCount;
+          });
+    
+          const newBalances = {};
+          leaveOptions.forEach((plan) => {
+            const used = usage[plan.id] || 0;
+            newBalances[plan.id] = Math.max(0, plan.days - used);
+          });
+    
+          setLeaveBalances(newBalances);
+        } catch (error) {
+          console.error("Error fetching leave usage:", error);
+        }
       }
-    }
-
-    calculateBalances();
-  }, [currentUser, leaveOptions, leaveHistory]);
+    
+      calculateBalances();
+    }, [currentUser, leaveOptions, leaveHistory]);
 
   // Submit leave application
   async function handleSubmitApplication(e) {
@@ -498,3 +505,4 @@ export default function UserApplyForLeave() {
     </div>
   );
 }
+
