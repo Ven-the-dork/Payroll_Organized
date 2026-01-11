@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../../firebaseConfig";
+import { supabase } from "../../../supabaseClient";
 
 import UserTopBar from "../../../components/UserTopBar";
 import FAQModal from "../../../components/FAQModal";
@@ -15,9 +16,8 @@ import {
   User,
   Calendar,
   Clock,
-  X,                // ← add this
+  X,
 } from "lucide-react";
-
 
 import {
   fetchEmployeeIdByFirebaseUid,
@@ -86,6 +86,7 @@ export default function DashboardUser() {
 
   const [currentUser, setCurrentUser] = useState(null);
   const [employeeId, setEmployeeId] = useState(null);
+  const [employeeCategory, setEmployeeCategory] = useState(null);
 
   const [hasClockedInToday, setHasClockedInToday] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
@@ -142,6 +143,26 @@ export default function DashboardUser() {
     loadEmployeeId();
   }, [currentUser, employeeId]);
 
+  // Fetch employee category from database
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (!employeeId) return;
+      try {
+        const { data, error } = await supabase
+          .from("employees")
+          .select("category")
+          .eq("id", employeeId)
+          .single();
+        
+        if (error) throw error;
+        if (data) setEmployeeCategory(data.category);
+      } catch (err) {
+        console.error("Failed to fetch employee category:", err);
+      }
+    };
+    fetchCategory();
+  }, [employeeId]);
+
   // Sync clock status
   const syncClockStatus = useCallback(async () => {
     if (!employeeId) return;
@@ -196,16 +217,26 @@ export default function DashboardUser() {
     navigate("/", { replace: true });
   };
 
+  // ✅ PRESERVED: Sunday clock-in restriction
   const handleClockIn = async () => {
     if (clockLoading) return;
-
+    
     if (hasClockedInToday) {
       setAttendanceMessage("Already clocked in today.");
       return;
     }
 
+    // ✅ KEPT: Check if today is Sunday
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    
+    if (dayOfWeek === 0) {
+      setAttendanceMessage("Clock in is not allowed on Sundays. Please try again on a weekday.");
+      return;
+    }
+
     setClockLoading(true);
-    setAttendanceMessage("");
+    setAttendanceMessage(""); 
 
     try {
       const res = await clockifyClockIn();
@@ -243,14 +274,22 @@ export default function DashboardUser() {
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Fetch leave plans
+  // Fetch leave plans - filtered by employee category
   useEffect(() => {
     async function fetchLeaveOptions() {
+      if (!employeeCategory) return; // Wait for category
+      
       setLoadingLeaves(true);
       try {
         const plans = await fetchLeavePlans();
+        
+        // Filter: Job Order only sees unpaid leaves
+        const filteredPlans = employeeCategory === "Job Order"
+          ? plans.filter(plan => plan.is_paid === false)
+          : plans; // Regular sees all
+        
         setLeaveOptions(
-          plans.map((row) => ({
+          filteredPlans.map((row) => ({
             id: row.id,
             label: row.name,
             days: row.duration_days,
@@ -265,19 +304,19 @@ export default function DashboardUser() {
     }
 
     fetchLeaveOptions();
-  }, []);
+  }, [employeeCategory]);
 
-  // Calculate leave balances
-    useEffect(() => {
+  // ✅ UPDATED: Calculate leave balances (accounts for recalled leaves)
+  useEffect(() => {
     async function calculateBalances() {
       if (!currentUser?.uid || leaveOptions.length === 0) return;
-  
+
       try {
         const applications = await fetchUserLeaveApplications(currentUser.uid);
-  
+
         const usage = {};
         (applications || []).forEach((app) => {
-          // Use days_used for recalled leaves, duration_days for others
+          // ✅ NEW: Use days_used for recalled leaves, duration_days for others
           let daysToCount = app.duration_days;
           
           if (app.status === 'recalled' && app.days_used !== null) {
@@ -287,21 +326,21 @@ export default function DashboardUser() {
           usage[app.leave_plan_id] =
             (usage[app.leave_plan_id] || 0) + daysToCount;
         });
-  
+
         const newBalances = {};
         leaveOptions.forEach((plan) => {
           const used = usage[plan.id] || 0;
           newBalances[plan.id] = Math.max(0, plan.days - used);
         });
-  
+
         setLeaveBalances(newBalances);
       } catch (error) {
         console.error("Error fetching leave usage:", error);
       }
     }
-  
+
     calculateBalances();
-}, [currentUser, leaveOptions]);
+  }, [currentUser, leaveOptions]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col">
@@ -406,8 +445,6 @@ export default function DashboardUser() {
     </div>
   );
 }
-
-/* ProfileModal stays here or can be moved to components/ProfileModal.jsx */
 
 function ProfileModal({ onClose, profile, onChange }) {
   return (
