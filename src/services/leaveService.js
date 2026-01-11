@@ -10,7 +10,6 @@ export async function fetchLeavePlans() {
     .eq("is_active", true)
     .order("name");
 
-
   if (error) throw error;
   return data || [];
 }
@@ -37,14 +36,13 @@ export async function fetchLeavePlansForCategory(employeeCategory) {
 }
 
 
-// User: leave usage for balance calculations (DashboardUser)
+// ✅ FIXED: User: leave usage for balance calculations (includes recalled leaves)
 export async function fetchUserLeaveApplications(firebaseUid) {
   const { data, error } = await supabase
     .from("leave_applications")
-    .select("leave_plan_id, duration_days, status")
+    .select("leave_plan_id, duration_days, status, days_used") // ✅ ADDED days_used
     .eq("firebase_uid", firebaseUid)
-    .in("status", ["approved", "pending"]);
-
+    .in("status", ["approved", "pending", "recalled"]); // ✅ ADDED recalled
 
   if (error) throw error;
   return data || [];
@@ -65,7 +63,6 @@ export async function fetchOngoingRecallableLeaves(todayIso) {
     .gte("end_date", todayIso)
     .order("start_date", { ascending: false });
 
-
   if (error) throw error;
   const rows = data || [];
   return rows.filter((leave) => leave.leave_plans?.allow_recall === true);
@@ -80,7 +77,6 @@ export async function createLeavePlan(payload) {
     .select("*")
     .single();
 
-
   if (error) throw error;
   return data;
 }
@@ -92,7 +88,6 @@ export async function updateLeavePlan(id, updates) {
     .update(updates)
     .eq("id", id);
 
-
   if (error) throw error;
 }
 
@@ -102,7 +97,6 @@ export async function softDeleteLeavePlan(id) {
     .from("leave_plans")
     .update({ is_active: false })
     .eq("id", id);
-
 
   if (error) throw error;
 }
@@ -114,7 +108,6 @@ export async function updateLeaveStatus(id, updates) {
     .from("leave_applications")
     .update(updates)
     .eq("id", id);
-
 
   if (error) throw error;
 }
@@ -131,7 +124,6 @@ export async function getLeaveApplicationForNotification(id) {
     )
     .eq("id", id)
     .single();
-
 
   if (error) throw error;
   return data;
@@ -155,7 +147,6 @@ export async function fetchAdminLeaveApplications() {
     )
     .order("created_at", { ascending: false });
 
-
   if (error) throw error;
   return data || [];
 }
@@ -169,7 +160,6 @@ export async function fetchUserLeaveHistory(firebaseUid) {
     .eq("firebase_uid", firebaseUid)
     .order("applied_at", { ascending: false });
 
-
   if (error) throw error;
   return data || [];
 }
@@ -182,7 +172,6 @@ export async function insertLeaveApplication(payload) {
     .insert(payload)
     .select("*")
     .single();
-
 
   if (error) throw error;
   return data;
